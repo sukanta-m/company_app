@@ -26,14 +26,15 @@ gem 'mongoid', '~> 6.1.0'
 gem 'bson_ext'
 
 group :development, :test do
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'byebug', platform: :mri
   gem 'rspec-rails'
   gem 'factory_bot_rails'
   gem 'database_cleaner'
   gem 'rubocop'
-  gem 'pry'
   gem 'pry-rails'
+  gem 'simplecov', :require => false
+  gem 'simplecov-rcov', :require => false
+  gem "parallel_tests"
+  gem "faker"
 end
 
 group :development do

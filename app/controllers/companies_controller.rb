@@ -31,15 +31,20 @@ class CompaniesController < ApplicationController
 
   # GET /companies/1
   def show
-    render json: @company
+    render json: @company.serializable_hash(include: :branches)
   end
 
   # POST /companies
   def create
+    branches = params[:company][:branches]
     @company = Company.new(company_params)
 
+    branches.each do |branch|
+      @company.branches << Branch.new(branch_params(branch))
+    end if branches.present?
+
     if @company.save
-      render json: @company, status: :created, location: @company
+      render json: @company.serializable_hash(include: :branches), status: :created
     else
       render json: @company.errors, status: :unprocessable_entity
     end
@@ -47,8 +52,12 @@ class CompaniesController < ApplicationController
 
   # PATCH/PUT /companies/1
   def update
+    branches = params[:company][:branches]
+
     if @company.update(company_params)
-      render json: @company
+      @company.create_or_update_branches(branches.map { |b| branch_params(b) }) if branches.present?
+
+      render json: @company.serializable_hash(include: :branches)
     else
       render json: @company.errors, status: :unprocessable_entity
     end
@@ -56,15 +65,24 @@ class CompaniesController < ApplicationController
 
   # DELETE /companies/1
   def destroy
-    @company.destroy
+    if @company.destroy
+      render status: :ok
+    else
+      render json: @company.errors, status: :unprocessable_entity
+    end
   end
 
   private
-    def set_company
-      @company = Company.find(params[:id])
-    end
 
-    def company_params
-      params.require(:company).permit(:name, :website, :reg_id, :timings, :established_date)
-    end
+  def set_company
+    @company = Company.find(params[:id])
+  end
+
+  def company_params
+    params.require(:company).permit(:name, :website, :reg_id, :timings, :established_date, branches: [])
+  end
+
+  def branch_params(branch)
+    branch.require(:startup).permit(:name, :line1, :line2, :city, :state, :country, :zip)
+  end
 end
