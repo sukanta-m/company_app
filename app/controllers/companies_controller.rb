@@ -67,8 +67,6 @@ class CompaniesController < ApplicationController
   def destroy
     if @company.destroy
       render status: :ok
-    else
-      render json: @company.errors, status: :unprocessable_entity
     end
   end
 
